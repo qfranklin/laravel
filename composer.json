@@ -1,0 +1,9 @@
+{
+    "name": "qfranklin/laravel",
+    "autoload": {
+        "psr-4": {
+            "Qfranklin\\Laravel\\": "src/"
+        }
+    },
+    "require": {}
+}

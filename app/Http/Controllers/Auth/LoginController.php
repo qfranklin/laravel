@@ -23,7 +23,10 @@ class LoginController extends Controller
         if (Auth::attempt($request->only('email', 'password'))) {
             $user = Auth::user();
             $token = $user->createToken('auth_token')->plainTextToken;
-            return response()->json(['token' => $token], 200);
+            return response()->json([
+                'token' => $token,
+                'is_admin' => $user->is_admin,
+            ], 200);
         }
 
         return response()->json(['error' => 'Unauthorized'], 401);

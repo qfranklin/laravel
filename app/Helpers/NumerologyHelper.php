@@ -9,19 +9,30 @@ class NumerologyHelper
         $date = new \DateTime($birthday);
         $sum = array_sum(str_split($date->format('Ymd')));
 
-        while ($sum > 9) {
+        while ($sum > 9 && $sum !== 11 && $sum !== 22) {
             $sum = array_sum(str_split($sum));
         }
 
         return $sum;
     }
 
-    public static function calculatePersonalDayNumber($lifePathNumber, $currentDate)
+    public static function calculateUniversalDayNumber($currentDate)
     {
         $date = new \DateTime($currentDate);
-        $sum = $lifePathNumber + array_sum(str_split($date->format('md')));
+        $sum = array_sum(str_split($date->format('Ymd')));
 
-        while ($sum > 9) {
+        while ($sum > 9 && $sum !== 11 && $sum !== 22) {
+            $sum = array_sum(str_split($sum));
+        }
+
+        return $sum;
+    }
+
+    public static function calculatePersonalDayNumber($lifePathNumber, $universalDayNumber)
+    {
+        $sum = $lifePathNumber + $universalDayNumber;
+
+        while ($sum > 9 && $sum !== 11 && $sum !== 22) {
             $sum = array_sum(str_split($sum));
         }
 

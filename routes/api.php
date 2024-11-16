@@ -18,7 +18,11 @@ use App\Http\Controllers\UserController;
 */
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+    return response()->json([
+        'email' => $request->user()->email,
+        'is_admin' => $request->user()->is_admin,
+        'birthday' => $request->user()->birthday,
+    ]);
 });
 
 Route::post('/register', [RegisterController::class, 'register']);

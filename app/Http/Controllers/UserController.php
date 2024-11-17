@@ -24,8 +24,8 @@ class UserController extends Controller
     public function getUserData(Request $request)
     {
         $user = $request->user();
-        $lifePathNumber = NumerologyHelper::calculateLifePathNumber($user->birthday);
-        $universalDayNumber = NumerologyHelper::calculateUniversalDayNumber(now()->format('Y-m-d'));
+        $lifePathNumber = NumerologyHelper::reduceLifePathDate($user->birthday);
+        $universalDayNumber = NumerologyHelper::reduceLifePathDate(now()->format('Y-m-d'));
         $personalDayNumber = NumerologyHelper::calculatePersonalDayNumber($lifePathNumber, $universalDayNumber);
         $dailyPrediction = NumerologyHelper::getDailyPrediction($lifePathNumber, $personalDayNumber);
 

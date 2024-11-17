@@ -4,24 +4,12 @@ namespace App\Helpers;
 
 class NumerologyHelper
 {
-    public static function calculateLifePathNumber($birthday)
+    public static function reduceLifePathDate($date)
     {
-        $date = new \DateTime($birthday);
+        $date = new \DateTime($date);
         $sum = array_sum(str_split($date->format('Ymd')));
 
-        while ($sum > 9 && $sum !== 11 && $sum !== 22) {
-            $sum = array_sum(str_split($sum));
-        }
-
-        return $sum;
-    }
-
-    public static function calculateUniversalDayNumber($currentDate)
-    {
-        $date = new \DateTime($currentDate);
-        $sum = array_sum(str_split($date->format('Ymd')));
-
-        while ($sum > 9 && $sum !== 11 && $sum !== 22) {
+        while ($sum > 9 && $sum !== 11 && $sum !== 22 && $sum !== 33) {
             $sum = array_sum(str_split($sum));
         }
 
@@ -32,7 +20,7 @@ class NumerologyHelper
     {
         $sum = $lifePathNumber + $universalDayNumber;
 
-        while ($sum > 9 && $sum !== 11 && $sum !== 22) {
+        while ($sum > 9 && $sum !== 11 && $sum !== 22 && $sum !== 33) {
             $sum = array_sum(str_split($sum));
         }
 

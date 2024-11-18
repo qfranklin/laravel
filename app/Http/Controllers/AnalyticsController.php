@@ -14,10 +14,17 @@ class AnalyticsController extends Controller
         $validated = $request->validate([
             'session_id' => 'required|string',
             'user_id' => 'nullable|integer',
-            'event_type' => 'required|in:view,click,add_to_cart,purchase,page_view',
-            'product_id' => 'nullable|integer|exists:products,id',
+            'event_type' => 'required|in:view,click,add_to_cart,purchase,page_view,test_event',
+            'product_id' => 'nullable|integer',
             'page_url' => 'nullable|string',
         ]);
+
+        // Apply the exists rule conditionally
+        if ($request->filled('product_id') && $request->product_id != 0) {
+            $request->validate([
+                'product_id' => 'exists:products,id',
+            ]);
+        }
 
         // Check if session exists or create a new session record
         $session = Session::where('session_id', $validated['session_id'])->first();
@@ -35,7 +42,7 @@ class AnalyticsController extends Controller
         $analyticsData->session_id = $session->id;
         $analyticsData->user_id = $validated['user_id'];
         $analyticsData->event_type = $validated['event_type'];
-        $analyticsData->product_id = $validated['product_id'];
+        $analyticsData->product_id = $validated['product_id'] != 0 ? $validated['product_id'] : null;
         $analyticsData->page_url = $validated['page_url'] ?? null;
         $analyticsData->save();
 

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AnalyticsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,3 +27,5 @@ Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth:san
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/update', [UserController::class, 'update']);
 });
+
+Route::post('/track-event', [AnalyticsController::class, 'trackEvent']);

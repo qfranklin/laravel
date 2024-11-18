@@ -56,6 +56,8 @@ class AnalyticsController extends Controller
         $today = Carbon::today();
         $analytics = UserAnalytics::with('user')
             ->whereDate('created_at', $today)
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
             ->get()
             ->map(function ($item) {
                 return [
@@ -65,7 +67,7 @@ class AnalyticsController extends Controller
                     'event_type' => $item->event_type,
                     'product_id' => $item->product_id,
                     'page_url' => $item->page_url,
-                    'created_at' => $item->created_at->format('F j, Y, g:i a'),
+                    'created_at' => $item->created_at->timezone('America/New_York')->format('F j, Y, g:i a'), // Change to your desired timezone
                 ];
             });
 

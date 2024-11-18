@@ -40,9 +40,9 @@ class AnalyticsController extends Controller
         // Create the analytics record for the event
         $analyticsData = new UserAnalytics();
         $analyticsData->session_id = $session->id;
-        $analyticsData->user_id = $validated['user_id'];
+        $analyticsData->user_id = $validated['user_id'] ?? null;
         $analyticsData->event_type = $validated['event_type'];
-        $analyticsData->product_id = $validated['product_id'] != 0 ? $validated['product_id'] : null;
+        $analyticsData->product_id = array_key_exists('product_id', $validated) && $validated['product_id'] != 0 ? $validated['product_id'] : null;
         $analyticsData->page_url = $validated['page_url'] ?? null;
         $analyticsData->save();
 

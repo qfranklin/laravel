@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Session;
 use App\Models\UserAnalytics;
 use App\Models\SessionData;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class AnalyticsController extends Controller
 {
@@ -47,5 +49,26 @@ class AnalyticsController extends Controller
         $analyticsData->save();
 
         return response()->json(['message' => 'Event tracked successfully']);
+    }
+
+    public function getTodayAnalytics()
+    {
+        $today = Carbon::today();
+        $analytics = UserAnalytics::with('user')
+            ->whereDate('created_at', $today)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'session_id' => $item->session_id,
+                    'user_name' => $item->user ? $item->user->name : 'N/A',
+                    'user_email' => $item->user ? $item->user->email : 'N/A',
+                    'event_type' => $item->event_type,
+                    'product_id' => $item->product_id,
+                    'page_url' => $item->page_url,
+                    'created_at' => $item->created_at->format('F j, Y, g:i a'),
+                ];
+            });
+
+        return response()->json($analytics);
     }
 }

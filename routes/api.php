@@ -29,3 +29,4 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::post('/track-event', [AnalyticsController::class, 'trackEvent']);
+Route::get('/analytics/today', [AnalyticsController::class, 'getTodayAnalytics']);

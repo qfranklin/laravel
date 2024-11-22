@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\NotesController;
+use App\Http\Controllers\BitcoinPriceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,3 +34,4 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::post('/track-event', [AnalyticsController::class, 'trackEvent']);
 Route::get('/analytics/today', [AnalyticsController::class, 'getTodayAnalytics']);
+Route::get('/bitcoin/sma/{window}', [BitcoinPriceController::class, 'getSMA']);

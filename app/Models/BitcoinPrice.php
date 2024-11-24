@@ -28,4 +28,20 @@ class BitcoinPrice extends Model
                 return $item;
             });
     }
+
+    public static function getMonthlyData($year, $month)
+    {
+        return self::whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->orderBy('date')
+            ->get();
+    }
+
+    public static function calculateMovingAverage($date, $days)
+    {
+        return self::where('date', '<=', $date)
+            ->orderBy('date', 'desc')
+            ->take($days)
+            ->avg('max_price');
+    }
 }

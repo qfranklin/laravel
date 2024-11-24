@@ -32,3 +32,5 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::get('/bitcoin/sma/{window}', [BitcoinPriceController::class, 'getSMA']);
+Route::get('/bitcoin/monthly/{year}/{month}', [BitcoinPriceController::class, 'getMonthlyData']);
+Route::get('/bitcoin/available-months', [BitcoinPriceController::class, 'getAvailableMonths']);

@@ -17,6 +17,10 @@ class BitcoinPriceController extends Controller
     public function getMonthlyData($year, $month)
     {
         $data = BitcoinPrice::getMonthlyData($year, $month);
+        $data->each(function ($item) {
+            $item->sma_50 = BitcoinPrice::calculateMovingAverage($item->date, 50);
+            $item->sma_200 = BitcoinPrice::calculateMovingAverage($item->date, 200);
+        });
         return response()->json($data);
     }
 

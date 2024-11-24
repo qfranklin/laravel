@@ -14,6 +14,19 @@ class BitcoinPriceController extends Controller
         return response()->json($smaData);
     }
 
+    public function getQuarterlyData($year, $quarter)
+    {
+        $startMonth = ($quarter - 1) * 3 + 1;
+        $endMonth = $startMonth + 2;
+
+        $data = BitcoinPrice::getQuarterlyData($year, $startMonth, $endMonth);
+        $data->each(function ($item) {
+            $item->sma_50 = BitcoinPrice::calculateMovingAverage($item->date, 50);
+            $item->sma_200 = BitcoinPrice::calculateMovingAverage($item->date, 200);
+        });
+        return response()->json($data);
+    }
+
     public function getMonthlyData($year, $month)
     {
         $data = BitcoinPrice::getMonthlyData($year, $month);
@@ -35,6 +48,20 @@ class BitcoinPriceController extends Controller
         return response()->json([
             'minMonth' => $minMonth,
             'maxMonth' => $maxMonth,
+        ]);
+    }
+
+    public function getAvailableQuarters()
+    {
+        $minDate = BitcoinPrice::min('date');
+        $maxDate = BitcoinPrice::max('date');
+
+        $minQuarter = Carbon::parse($minDate)->quarter;
+        $maxQuarter = Carbon::parse($maxDate)->quarter;
+
+        return response()->json([
+            'minQuarter' => $minQuarter,
+            'maxQuarter' => $maxQuarter,
         ]);
     }
 }

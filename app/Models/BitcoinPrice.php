@@ -12,26 +12,32 @@ class BitcoinPrice extends Model
     protected $fillable = [
         'date',
         'max_price',
+        'open_price',
+        'close_price',
+        'high_price',
+        'low_price',
+        'volume',
     ];
 
     public static function calculateSMA($window)
     {
-        return self::select('date', 'max_price')
+        return self::select('date', 'close_price')
             ->orderBy('date')
             ->get()
             ->map(function ($item, $key) use ($window) {
                 $item->sma = self::where('date', '<=', $item->date)
                     ->orderBy('date', 'desc')
                     ->take($window)
-                    ->avg('max_price');
+                    ->avg('close_price');
                 return $item;
             });
     }
 
-    public static function getMonthlyData($year, $month)
+    public static function getQuarterlyData($year, $startMonth, $endMonth)
     {
         return self::whereYear('date', $year)
-            ->whereMonth('date', $month)
+            ->whereMonth('date', '>=', $startMonth)
+            ->whereMonth('date', '<=', $endMonth)
             ->orderBy('date')
             ->get();
     }
@@ -41,6 +47,6 @@ class BitcoinPrice extends Model
         return self::where('date', '<=', $date)
             ->orderBy('date', 'desc')
             ->take($days)
-            ->avg('max_price');
+            ->avg('close_price');
     }
 }

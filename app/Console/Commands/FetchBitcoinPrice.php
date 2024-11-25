@@ -29,14 +29,27 @@ class FetchBitcoinPrice extends Command
         if ($response->successful()) {
             $data = $response->json();
 
-            if (isset($data['prices'])) {
-                foreach ($data['prices'] as $priceData) {
+            if (isset($data['prices']) && isset($data['market_caps']) && isset($data['total_volumes'])) {
+                foreach ($data['prices'] as $index => $priceData) {
                     $date = Carbon::createFromTimestampMs($priceData[0])->toDateString();
                     $maxPrice = $priceData[1];
 
+                    $openPrice = $data['prices'][$index][1];
+                    $closePrice = $data['prices'][$index][1];
+                    $highPrice = $data['prices'][$index][1];
+                    $lowPrice = $data['prices'][$index][1];
+                    $volume = $data['total_volumes'][$index][1];
+
                     BitcoinPrice::updateOrCreate(
                         ['date' => $date],
-                        ['max_price' => $maxPrice]
+                        [
+                            'max_price' => $maxPrice,
+                            'open_price' => $openPrice,
+                            'close_price' => $closePrice,
+                            'high_price' => $highPrice,
+                            'low_price' => $lowPrice,
+                            'volume' => $volume
+                        ]
                     );
                 }
 

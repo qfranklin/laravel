@@ -36,3 +36,4 @@ Route::get('/bitcoin/monthly/{year}/{month}', [BitcoinPriceController::class, 'g
 Route::get('/bitcoin/available-months', [BitcoinPriceController::class, 'getAvailableMonths']);
 Route::get('/bitcoin/quarterly/{year}/{quarter}', [BitcoinPriceController::class, 'getQuarterlyData']);
 Route::get('/bitcoin/available-quarters', [BitcoinPriceController::class, 'getAvailableQuarters']);
+Route::get('/bitcoin/quarterly-max-price/{year}/{quarter}', [BitcoinPriceController::class, 'getQuarterlyMaxPrice']);

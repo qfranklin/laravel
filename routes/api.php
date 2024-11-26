@@ -20,7 +20,6 @@ use App\Http\Controllers\BitcoinPriceController;
 */
 
 Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUserData']);
-
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth:sanctum');
@@ -31,7 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notes', [NotesController::class, 'store']);
 });
 
-Route::get('/bitcoin/sma/{window}', [BitcoinPriceController::class, 'getSMA']);
+Route::get('/bitcoin/sma', [BitcoinPriceController::class, 'getSMA']);
 Route::get('/bitcoin/monthly/{year}/{month}', [BitcoinPriceController::class, 'getMonthlyData']);
 Route::get('/bitcoin/available-months', [BitcoinPriceController::class, 'getAvailableMonths']);
 Route::get('/bitcoin/quarterly/{year}/{quarter}', [BitcoinPriceController::class, 'getQuarterlyData']);

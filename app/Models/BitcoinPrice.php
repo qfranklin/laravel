@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class BitcoinPrice extends Model
 {
@@ -19,16 +20,22 @@ class BitcoinPrice extends Model
         'volume',
     ];
 
-    public static function calculateSMA($window)
+    public static function calculateSMA($date, $window)
     {
-        return self::select('date', 'close_price')
+        return self::where('date', '<=', $date)
+            ->orderBy('date', 'desc')
+            ->take($window)
+            ->avg('close_price');
+    }
+
+    public static function getSMAData($startDate, $endDate)
+    {
+        return self::whereBetween('date', [$startDate, $endDate])
             ->orderBy('date')
             ->get()
-            ->map(function ($item, $key) use ($window) {
-                $item->sma = self::where('date', '<=', $item->date)
-                    ->orderBy('date', 'desc')
-                    ->take($window)
-                    ->avg('close_price');
+            ->map(function ($item) {
+                $item->sma_50 = self::calculateSMA($item->date, 50);
+                $item->sma_200 = self::calculateSMA($item->date, 200);
                 return $item;
             });
     }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class BitcoinPrice extends Model
 {
@@ -51,9 +52,15 @@ class BitcoinPrice extends Model
 
     public static function calculateMovingAverage($date, $days)
     {
-        return self::where('date', '<=', $date)
+        $subQuery = self::select('close_price')
+            ->where('date', '<=', $date)
             ->orderBy('date', 'desc')
-            ->take($days)
+            ->take($days);
+
+        $average = DB::table(DB::raw("({$subQuery->toSql()}) as recent_prices"))
+            ->mergeBindings($subQuery->getQuery())
             ->avg('close_price');
+
+        return $average;
     }
 }

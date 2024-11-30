@@ -13,24 +13,26 @@ class BitcoinPrice extends Model
 
     protected $fillable = [
         'date',
-        'max_price',
-        'open_price',
-        'close_price',
-        'high_price',
-        'low_price',
-        'volume',
+        'high_24h',
+        'low_24h',
+        'market_cap',
+        'total_volume',
+        'circulating_supply',
+        'max_supply',
+        'sentiment_votes_up_percentage',
+        'sentiment_votes_down_percentage'
     ];
 
     public static function calculateMovingAverage($date, $days)
     {
-        $subQuery = self::select('close_price')
+        $subQuery = self::select('high_24h')
             ->where('date', '<=', $date)
             ->orderBy('date', 'desc')
             ->take($days);
 
         $average = DB::table(DB::raw("({$subQuery->toSql()}) as recent_prices"))
             ->mergeBindings($subQuery->getQuery())
-            ->avg('close_price');
+            ->avg('high_24h');
 
         return $average;
     }

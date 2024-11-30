@@ -19,7 +19,6 @@ return new class extends Migration
             $table->decimal('market_cap', 20, 2)->nullable();
             $table->bigInteger('total_volume')->nullable();
             $table->bigInteger('circulating_supply')->nullable();
-            $table->bigInteger('max_supply')->nullable();
             $table->decimal('sentiment_votes_up_percentage', 5, 2)->nullable();
             $table->decimal('sentiment_votes_down_percentage', 5, 2)->nullable();
             $table->timestamps();

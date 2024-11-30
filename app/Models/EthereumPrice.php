@@ -16,7 +16,6 @@ class EthereumPrice extends Model
         'market_cap',
         'total_volume',
         'circulating_supply',
-        'max_supply',
         'sentiment_votes_up_percentage',
         'sentiment_votes_down_percentage'
     ];

@@ -6,7 +6,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotesController;
-use App\Http\Controllers\BitcoinPriceController;
+use App\Http\Controllers\CryptoPriceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,4 +30,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notes', [NotesController::class, 'store']);
 });
 
-Route::get('/bitcoin/sma', [BitcoinPriceController::class, 'getSMA']);
+Route::get('/crypto/get-prices', [CryptoPriceController::class, 'getPrices']);

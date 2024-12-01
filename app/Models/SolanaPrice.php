@@ -19,4 +19,18 @@ class SolanaPrice extends Model
         'sentiment_votes_up_percentage',
         'sentiment_votes_down_percentage'
     ];
+
+    public static function calculateMovingAverage($date, $days)
+    {
+        $subQuery = self::select('high_24h')
+            ->where('date', '<=', $date)
+            ->orderBy('date', 'desc')
+            ->take($days);
+
+        $average = DB::table(DB::raw("({$subQuery->toSql()}) as recent_prices"))
+            ->mergeBindings($subQuery->getQuery())
+            ->avg('high_24h');
+
+        return $average;
+    }
 }

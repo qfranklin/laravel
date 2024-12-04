@@ -10,7 +10,7 @@ use Carbon\Carbon;
 class FetchHistoricalMoneroPrice extends Command
 {
     protected $signature = 'fetch:historical-monero-price {start_date?} {end_date?}';
-    protected $description = 'Fetch and store Monero daily maximum price data for a specified date range';
+    protected $description = 'Fetch and store Monero daily high and low price data for a specified date range';
 
     public function handle()
     {
@@ -29,28 +29,65 @@ class FetchHistoricalMoneroPrice extends Command
         if ($response->successful()) {
             $data = $response->json();
 
-            if (isset($data['prices']) && isset($data['market_caps']) && isset($data['total_volumes'])) {
-                foreach ($data['prices'] as $index => $priceData) {
-                    $date = Carbon::createFromTimestampMs($priceData[0])->toDateString();
-
-                    MoneroPrice::updateOrCreate(
-                        ['date' => $date],
-                        [
-                            'high_24h' => $priceData[1] ?? null,
-                            'low_24h' => $priceData[1] ?? null,
-                            'market_cap' => $data['market_caps'][$index][1] ?? null,
-                            'total_volume' => $data['total_volumes'][$index][1] ?? null
-                        ]
-                    );
-                }
-
-                $this->info('Monero daily maximum price data has been updated.');
+            if (isset($data['prices'])) {
+                $dailyData = $this->aggregateDailyHighLow($data['prices']);
+                $this->updateDatabase($dailyData);
+                $this->info('Monero daily price data has been updated.');
             } else {
                 $this->error('No price data found in the response.');
             }
         } else {
             $this->error('Failed to fetch Monero price data. Status: ' . $response->status());
             $this->error('Response: ' . $response->body());
+        }
+    }
+
+    /**
+     * Aggregates daily high and low prices.
+     *
+     * @param array $prices
+     * @return array
+     */
+    protected function aggregateDailyHighLow(array $prices): array
+    {
+        $dailyData = [];
+
+        foreach ($prices as $priceData) {
+            $timestamp = $priceData[0];
+            $price = $priceData[1];
+            $date = Carbon::createFromTimestampMs($timestamp)->toDateString();
+
+            // Initialize or update daily high/low
+            if (!isset($dailyData[$date])) {
+                $dailyData[$date] = [
+                    'high' => $price,
+                    'low' => $price,
+                ];
+            } else {
+                $dailyData[$date]['high'] = max($dailyData[$date]['high'], $price);
+                $dailyData[$date]['low'] = min($dailyData[$date]['low'], $price);
+            }
+        }
+
+        return $dailyData;
+    }
+
+    /**
+     * Updates the database with aggregated daily data.
+     *
+     * @param array $dailyData
+     * @return void
+     */
+    protected function updateDatabase(array $dailyData): void
+    {
+        foreach ($dailyData as $date => $data) {
+            MoneroPrice::updateOrCreate(
+                ['date' => $date],
+                [
+                    'high_24h' => $data['high'],
+                    'low_24h' => $data['low'],
+                ]
+            );
         }
     }
 }

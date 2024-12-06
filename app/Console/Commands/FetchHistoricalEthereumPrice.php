@@ -31,7 +31,7 @@ class FetchHistoricalEthereumPrice extends Command
 
             if (isset($data['prices'])) {
                 $dailyData = $this->aggregateDailyHighLow($data['prices']);
-                $this->updateDatabase($dailyData);
+                $this->updateDatabase($dailyData, $data['prices']);
                 $this->info('Ethereum daily price data has been updated.');
             } else {
                 $this->error('No price data found in the response.');
@@ -76,18 +76,49 @@ class FetchHistoricalEthereumPrice extends Command
      * Updates the database with aggregated daily data.
      *
      * @param array $dailyData
+     * @param array $prices
      * @return void
      */
-    protected function updateDatabase(array $dailyData): void
+    protected function updateDatabase(array $dailyData, array $prices): void
     {
         foreach ($dailyData as $date => $data) {
+            $currentPrice = $this->getCurrentPriceAt5amEST($prices, $date);
+
             EthereumPrice::updateOrCreate(
                 ['date' => $date],
                 [
                     'high_24h' => $data['high'],
                     'low_24h' => $data['low'],
+                    'current_price' => $currentPrice,
                 ]
             );
         }
+    }
+
+    /**
+     * Get the current price closest to 5am EST.
+     *
+     * @param array $prices
+     * @param string $date
+     * @return float|null
+     */
+    protected function getCurrentPriceAt5amEST(array $prices, string $date): ?float
+    {
+        $targetTime = Carbon::parse($date, 'America/New_York')->setTime(5, 0)->timestamp * 1000;
+        $closestPrice = null;
+        $closestTimeDiff = PHP_INT_MAX;
+
+        foreach ($prices as $priceData) {
+            $timestamp = $priceData[0];
+            $price = $priceData[1];
+            $timeDiff = abs($timestamp - $targetTime);
+
+            if ($timeDiff < $closestTimeDiff) {
+                $closestTimeDiff = $timeDiff;
+                $closestPrice = $price;
+            }
+        }
+
+        return $closestPrice;
     }
 }

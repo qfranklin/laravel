@@ -11,6 +11,7 @@ class EthereumPrice extends Model
 
     protected $fillable = [
         'date',
+        'current_price',
         'high_24h',
         'low_24h',
         'market_cap',

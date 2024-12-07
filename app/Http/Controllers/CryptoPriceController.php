@@ -39,31 +39,16 @@ class CryptoPriceController extends Controller
             ->orderBy('date')
             ->get();
 
-        // Extract high_24h prices for moving average calculations
-        $highPrices = $prices->pluck('high_24h')->map(fn($price) => (float) $price)->toArray();
+        // Extract closing prices for RSI calculations
+        $closingPrices = $prices->pluck('current_price')->map(fn($price) => (float) $price)->toArray();
 
-        // Calculate moving averages
-        $ma10 = $this->calculateMovingAverage($highPrices, 10);
-        $ma50 = $this->calculateMovingAverage($highPrices, 50);
+        // Calculate RSI
+        $rsi = $this->calculateRSI($closingPrices, 14);
 
-        // Add moving averages and prediction analysis to each price record
-        $prices = $prices->map(function ($price, $index) use ($ma10, $ma50, $highPrices) {
-            $ma10Value = $ma10[$index] ?? null;
-            $ma50Value = $ma50[$index] ?? null;
-
-            // Determine crossovers
-            $goldenCross = $this->isGoldenCross($ma10, $ma50, $index);
-            $deathCross = $this->isDeathCross($ma10, $ma50, $index);
-
-            // Verify prediction accuracy
-            $accuracy = $this->verifyPrediction($highPrices, $index, $goldenCross, $deathCross, $price->total_volume);
-
+        // Add RSI to each price record
+        $prices = $prices->map(function ($price, $index) use ($rsi) {
             return array_merge($price->toArray(), [
-                'ma_10' => $ma10Value,
-                'ma_50' => $ma50Value,
-                'golden_cross' => $goldenCross,
-                'death_cross' => $deathCross,
-                'prediction_accuracy' => $accuracy,
+                'rsi' => $rsi[$index] ?? null,
             ]);
         });
 
@@ -74,6 +59,51 @@ class CryptoPriceController extends Controller
         });
 
         return response()->json($filteredPrices->values());
+    }
+
+    /**
+     * Calculate the RSI (Relative Strength Index).
+     *
+     * @param array $prices
+     * @param int $period
+     * @return array
+     */
+    protected function calculateRSI(array $prices, int $period): array
+    {
+        $rsi = [];
+        $gains = 0;
+        $losses = 0;
+
+        for ($i = 1; $i < count($prices); $i++) {
+            $change = $prices[$i] - $prices[$i - 1];
+            $gain = max(0, $change);
+            $loss = max(0, -$change);
+
+            if ($i <= $period) {
+                $gains += $gain;
+                $losses += $loss;
+
+                if ($i == $period) {
+                    $averageGain = $gains / $period;
+                    $averageLoss = $losses / $period;
+                    $rs = $averageGain / $averageLoss;
+                    $rsi[] = 100 - (100 / (1 + $rs));
+                } else {
+                    $rsi[] = null; // Not enough data to calculate RSI
+                }
+            } else {
+                $averageGain = (($averageGain * ($period - 1)) + $gain) / $period;
+                $averageLoss = (($averageLoss * ($period - 1)) + $loss) / $period;
+                if ($averageLoss == 0) {
+                    $rsi[] = 100;
+                } else {
+                    $rs = $averageGain / $averageLoss;
+                    $rsi[] = 100 - (100 / (1 + $rs));
+                }
+            }
+        }
+
+        return $rsi;
     }
 
     private function calculateMovingAverage(array $prices, int $period)
@@ -96,45 +126,5 @@ class CryptoPriceController extends Controller
         }
 
         return $movingAverage;
-    }
-
-    private function isGoldenCross(array $ma10, array $ma50, int $index)
-    {
-        if ($index < 1 || !isset($ma10[$index], $ma50[$index])) {
-            return false;
-        }
-        return $ma10[$index - 1] < $ma50[$index - 1] && $ma10[$index] >= $ma50[$index];
-    }
-
-    private function isDeathCross(array $ma10, array $ma50, int $index)
-    {
-        if ($index < 1 || !isset($ma10[$index], $ma50[$index])) {
-            return false;
-        }
-        return $ma10[$index - 1] > $ma50[$index - 1] && $ma10[$index] <= $ma50[$index];
-    }
-
-    private function verifyPrediction(array $highPrices, int $index, bool $goldenCross, bool $deathCross, $volume)
-    {
-        if (!isset($highPrices[$index], $highPrices[$index - 1])) {
-            return null; // Not enough data for prediction
-        }
-
-        $priceChange = $highPrices[$index] - $highPrices[$index - 1];
-
-        // Volume threshold: Arbitrary multiplier to gauge significant volume
-        $volumeThreshold = 1.2 * $highPrices[$index - 1];
-
-        if ($goldenCross && $priceChange > 0 && $volume > $volumeThreshold) {
-            return 'accurate (up)';
-        }
-        if ($deathCross && $priceChange < 0 && $volume > $volumeThreshold) {
-            return 'accurate (down)';
-        }
-        if ($goldenCross || $deathCross) {
-            return 'inaccurate';
-        }
-
-        return 'neutral';
     }
 }

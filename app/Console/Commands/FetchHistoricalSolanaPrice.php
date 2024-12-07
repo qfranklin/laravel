@@ -82,13 +82,18 @@ class FetchHistoricalSolanaPrice extends Command
     protected function updateDatabase(array $dailyData, array $prices): void
     {
         foreach ($dailyData as $date => $data) {
-            $currentPrice = $this->getCurrentPriceAt5amEST($prices, $date);
+            $currentPrice = $this->getCurrentPriceAt3amEST($prices, $date);
+
+            $existingEntry = SolanaPrice::where('date', $date)->first();
+
+            $high_24h = $existingEntry ? max($existingEntry->high_24h, $data['high']) : $data['high'];
+            $low_24h = $existingEntry ? min($existingEntry->low_24h, $data['low']) : $data['low'];
 
             SolanaPrice::updateOrCreate(
                 ['date' => $date],
                 [
-                    'high_24h' => $data['high'],
-                    'low_24h' => $data['low'],
+                    'high_24h' => $high_24h,
+                    'low_24h' => $low_24h,
                     'current_price' => $currentPrice,
                 ]
             );
@@ -96,15 +101,15 @@ class FetchHistoricalSolanaPrice extends Command
     }
 
     /**
-     * Get the current price closest to 5am EST.
+     * Get the current price closest to 3am EST.
      *
      * @param array $prices
      * @param string $date
      * @return float|null
      */
-    protected function getCurrentPriceAt5amEST(array $prices, string $date): ?float
+    protected function getCurrentPriceAt3amEST(array $prices, string $date): ?float
     {
-        $targetTime = Carbon::parse($date, 'America/New_York')->setTime(5, 0)->timestamp * 1000;
+        $targetTime = Carbon::parse($date, 'America/New_York')->setTime(3, 0)->timestamp * 1000;
         $closestPrice = null;
         $closestTimeDiff = PHP_INT_MAX;
 

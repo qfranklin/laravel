@@ -47,7 +47,7 @@ class CryptoPriceController extends Controller
                 $additionalTime = $startTime->copy()->subDays(50);
                 $prices = $model::where('timestamp', '>=', $additionalTime)
                     ->where('timestamp', '<=', $endTime)
-                    ->whereRaw('HOUR(timestamp) = 0')
+                    ->whereRaw("DATE_FORMAT(timestamp, '%H:%i:%s') = '00:00:00'")
                     ->orderBy('timestamp')
                     ->get();
                 $period = 7;
@@ -58,15 +58,18 @@ class CryptoPriceController extends Controller
                 $additionalTime = $startTime->copy()->subDays(50);
                 $prices = $model::where('timestamp', '>=', $additionalTime)
                     ->where('timestamp', '<=', $endTime)
-                    ->whereRaw('HOUR(timestamp) = 0')
+                    ->whereRaw("DATE_FORMAT(timestamp, '%H:%i:%s') = '00:00:00'")
                     ->orderBy('timestamp')
                     ->get();
                 $period = 30;
                 break;
         }
 
+        // Remove duplicates by timestamp
+        $uniquePrices = $prices->unique('timestamp');
+
         // Filter the prices to only include the requested time range
-        $filteredPrices = $prices->filter(function ($price) use ($startTime, $endTime) {
+        $filteredPrices = $uniquePrices->filter(function ($price) use ($startTime, $endTime) {
             $time = Carbon::parse($price->timestamp, 'UTC');
             return $time->between($startTime, $endTime);
         });
@@ -78,16 +81,16 @@ class CryptoPriceController extends Controller
         $closingPrices = $prices->pluck('current_price')->map(fn($price) => (float) $price)->toArray();
 
         // Calculate moving averages
-        $ma10 = $this->calculateMovingAverage($highPrices, $period);
-        $ma50 = $this->calculateMovingAverage($highPrices, $period);
+        $ma10 = $this->calculateMovingAverage($highPrices, 10);
+        $ma50 = $this->calculateMovingAverage($highPrices, 50);
 
         // Calculate RSI
         $rsi = $this->calculateRSI($closingPrices, $period);
 
         // Add moving averages and RSI to each price record
         $filteredPrices->each(function ($price, $index) use ($ma10, $ma50, $rsi) {
-            $price->ma10 = $ma10[$index] ?? null;
-            $price->ma50 = $ma50[$index] ?? null;
+            $price->ma_10 = $ma10[$index] ?? null;
+            $price->ma_50 = $ma50[$index] ?? null;
             $price->rsi = $rsi[$index] ?? null;
         });
 

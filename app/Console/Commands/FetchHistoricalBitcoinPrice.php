@@ -10,7 +10,7 @@ use Carbon\Carbon;
 class FetchHistoricalBitcoinPrice extends Command
 {
     protected $signature = 'fetch:historical-bitcoin-price {start_date?} {end_date?}';
-    protected $description = 'Fetch and store Bitcoin daily high and low price data for a specified date range';
+    protected $description = 'Fetch and store Bitcoin historical price data for a specified date range';
 
     public function handle()
     {
@@ -30,9 +30,8 @@ class FetchHistoricalBitcoinPrice extends Command
             $data = $response->json();
 
             if (isset($data['prices'])) {
-                $dailyData = $this->aggregateDailyHighLow($data['prices']);
-                $this->updateDatabase($dailyData, $data['prices']);
-                $this->info('Bitcoin daily price data has been updated.');
+                $this->storeHistoricalData($data);
+                $this->info('Bitcoin historical price data has been updated.');
             } else {
                 $this->error('No price data found in the response.');
             }
@@ -43,87 +42,53 @@ class FetchHistoricalBitcoinPrice extends Command
     }
 
     /**
-     * Aggregates daily high and low prices.
+     * Stores the historical data in the database.
      *
-     * @param array $prices
-     * @return array
-     */
-    protected function aggregateDailyHighLow(array $prices): array
-    {
-        $dailyData = [];
-
-        foreach ($prices as $priceData) {
-            $timestamp = $priceData[0];
-            $price = $priceData[1];
-            $date = Carbon::createFromTimestampMs($timestamp)->toDateString();
-
-            // Initialize or update daily high/low
-            if (!isset($dailyData[$date])) {
-                $dailyData[$date] = [
-                    'high' => $price,
-                    'low' => $price,
-                ];
-            } else {
-                $dailyData[$date]['high'] = max($dailyData[$date]['high'], $price);
-                $dailyData[$date]['low'] = min($dailyData[$date]['low'], $price);
-            }
-        }
-
-        return $dailyData;
-    }
-
-    /**
-     * Updates the database with aggregated daily data.
-     *
-     * @param array $dailyData
-     * @param array $prices
+     * @param array $data
      * @return void
      */
-    protected function updateDatabase(array $dailyData, array $prices): void
+    protected function storeHistoricalData(array $data): void
     {
-        foreach ($dailyData as $date => $data) {
-            $currentPrice = $this->getCurrentPriceAt3amEST($prices, $date);
+        $priceDataPoints = [];
 
-            $existingEntry = BitcoinPrice::where('date', $date)->first();
+        foreach ($data['prices'] as $index => $priceData) {
+            $timestamp = Carbon::createFromTimestampMs($priceData[0])->roundHour()->setTimezone('UTC');
+            $currentPrice = $priceData[1];
+            $marketCap = $data['market_caps'][$index][1] ?? null;
+            $totalVolume = $data['total_volumes'][$index][1] ?? null;
 
-            $high_24h = $existingEntry ? max($existingEntry->high_24h, $data['high']) : $data['high'];
-            $low_24h = $existingEntry ? min($existingEntry->low_24h, $data['low']) : $data['low'];
+            $priceDataPoints[] = [
+                'timestamp' => $timestamp,
+                'current_price' => $currentPrice,
+                'market_cap' => $marketCap,
+                'total_volume' => $totalVolume,
+            ];
+        }
+
+        foreach ($priceDataPoints as $index => $priceData) {
+            $timestamp = $priceData['timestamp'];
+            $startTime = $timestamp->copy()->subHours(24);
+
+            $high_24h = null;
+            $low_24h = null;
+
+            foreach ($priceDataPoints as $dataPoint) {
+                if ($dataPoint['timestamp']->between($startTime, $timestamp)) {
+                    $high_24h = $high_24h === null ? $dataPoint['current_price'] : max($high_24h, $dataPoint['current_price']);
+                    $low_24h = $low_24h === null ? $dataPoint['current_price'] : min($low_24h, $dataPoint['current_price']);
+                }
+            }
 
             BitcoinPrice::updateOrCreate(
-                ['date' => $date],
+                ['timestamp' => $timestamp->toDateTimeString()],
                 [
+                    'current_price' => $priceData['current_price'],
                     'high_24h' => $high_24h,
                     'low_24h' => $low_24h,
-                    'current_price' => $currentPrice,
+                    'market_cap' => $priceData['market_cap'],
+                    'total_volume' => $priceData['total_volume'],
                 ]
             );
         }
-    }
-
-    /**
-     * Get the current price closest to 3am EST.
-     *
-     * @param array $prices
-     * @param string $date
-     * @return float|null
-     */
-    protected function getCurrentPriceAt3amEST(array $prices, string $date): ?float
-    {
-        $targetTime = Carbon::parse($date, 'America/New_York')->setTime(3, 0)->timestamp * 1000;
-        $closestPrice = null;
-        $closestTimeDiff = PHP_INT_MAX;
-
-        foreach ($prices as $priceData) {
-            $timestamp = $priceData[0];
-            $price = $priceData[1];
-            $timeDiff = abs($timestamp - $targetTime);
-
-            if ($timeDiff < $closestTimeDiff) {
-                $closestTimeDiff = $timeDiff;
-                $closestPrice = $price;
-            }
-        }
-
-        return $closestPrice;
     }
 }

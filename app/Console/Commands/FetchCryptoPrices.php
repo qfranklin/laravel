@@ -13,7 +13,7 @@ use App\Models\SolanaPrice;
 class FetchCryptoPrices extends Command
 {
     protected $signature = 'fetch:crypto-prices';
-    protected $description = 'Fetch and store daily price data for multiple cryptocurrencies';
+    protected $description = 'Fetch and store hourly price data for multiple cryptocurrencies';
 
     // Map cryptos to their respective models
     protected $cryptos = [
@@ -31,38 +31,39 @@ class FetchCryptoPrices extends Command
 
     protected function fetchAndStoreCryptoData()
     {
-        foreach ($this->cryptos as $cryptoId => $model) {
-            $this->updateCryptoData($cryptoId, $model);
-            sleep(1);
-        }
-    }
+        $cryptoIds = implode(',', array_keys($this->cryptos));
+        $url = "https://api.coingecko.com/api/v3/coins/markets";
+        $params = [
+            'vs_currency' => 'usd',
+            'ids' => $cryptoIds,
+        ];
 
-    protected function updateCryptoData($cryptoId, $model)
-    {
-        $url = "https://api.coingecko.com/api/v3/coins/{$cryptoId}";
-        $response = Http::get($url);
+        $response = Http::get($url, $params);
 
         if ($response->successful()) {
             $data = $response->json();
-            $marketData = $data['market_data'];
 
-            $model::updateOrCreate(
-                ['date' => Carbon::now()->toDateString()],
-                [
-                    'current_price' => $marketData['current_price']['usd'] ?? null,
-                    'high_24h' => $marketData['high_24h']['usd'] ?? null,
-                    'low_24h' => $marketData['low_24h']['usd'] ?? null,
-                    'market_cap' => $marketData['market_cap']['usd'] ?? null,
-                    'total_volume' => $marketData['total_volume']['usd'] ?? null,
-                    'circulating_supply' => $marketData['circulating_supply'] ?? null,
-                    'sentiment_votes_up_percentage' => $data['sentiment_votes_up_percentage'] ?? null,
-                    'sentiment_votes_down_percentage' => $data['sentiment_votes_down_percentage'] ?? null,
-                ]
-            );
+            foreach ($data as $cryptoData) {
+                $model = $this->cryptos[$cryptoData['id']];
+                $timestamp = Carbon::now()->roundHour()->setTimezone('UTC')->toDateTimeString();
 
-            $this->info("Data for {$cryptoId} has been updated.");
+                $model::updateOrCreate(
+                    ['timestamp' => $timestamp],
+                    [
+                        'current_price' => $cryptoData['current_price'],
+                        'high_24h' => $cryptoData['high_24h'],
+                        'low_24h' => $cryptoData['low_24h'],
+                        'market_cap' => $cryptoData['market_cap'],
+                        'total_volume' => $cryptoData['total_volume'],
+                        'circulating_supply' => $cryptoData['circulating_supply'],
+                        'max_supply' => $cryptoData['max_supply'],
+                        'sentiment_votes_up_percentage' => $cryptoData['sentiment_votes_up_percentage'] ?? null,
+                        'sentiment_votes_down_percentage' => $cryptoData['sentiment_votes_down_percentage'] ?? null,
+                    ]
+                );
+            }
         } else {
-            $this->error("Failed to fetch data for {$cryptoId}. Status: " . $response->status());
+            $this->error('Failed to fetch crypto prices. Status: ' . $response->status());
         }
     }
 }

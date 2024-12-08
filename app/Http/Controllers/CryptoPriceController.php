@@ -47,7 +47,7 @@ class CryptoPriceController extends Controller
                 $additionalTime = $startTime->copy()->subDays(50);
                 $prices = $model::where('timestamp', '>=', $additionalTime)
                     ->where('timestamp', '<=', $endTime)
-                    ->whereRaw('HOUR(FROM_UNIXTIME(timestamp)) = 0')
+                    ->whereRaw('HOUR(timestamp) = 0')
                     ->orderBy('timestamp')
                     ->get();
                 $period = 7;
@@ -58,7 +58,7 @@ class CryptoPriceController extends Controller
                 $additionalTime = $startTime->copy()->subDays(50);
                 $prices = $model::where('timestamp', '>=', $additionalTime)
                     ->where('timestamp', '<=', $endTime)
-                    ->whereRaw('HOUR(FROM_UNIXTIME(timestamp)) = 0')
+                    ->whereRaw('HOUR(timestamp) = 0')
                     ->orderBy('timestamp')
                     ->get();
                 $period = 30;
@@ -78,11 +78,11 @@ class CryptoPriceController extends Controller
         $closingPrices = $prices->pluck('current_price')->map(fn($price) => (float) $price)->toArray();
 
         // Calculate moving averages
-        $ma10 = $this->calculateMovingAverage($highPrices, $range === 'hourly' ? 10 : 10 * 24);
-        $ma50 = $this->calculateMovingAverage($highPrices, $range === 'hourly' ? 50 : 50 * 24);
+        $ma10 = $this->calculateMovingAverage($highPrices, $period);
+        $ma50 = $this->calculateMovingAverage($highPrices, $period);
 
         // Calculate RSI
-        $rsi = $this->calculateRSI($closingPrices, $range === 'hourly' ? 14 : 14 * 24);
+        $rsi = $this->calculateRSI($closingPrices, $period);
 
         // Add moving averages and RSI to each price record
         $filteredPrices->each(function ($price, $index) use ($ma10, $ma50, $rsi) {

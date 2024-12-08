@@ -89,6 +89,7 @@ class CryptoPriceController extends Controller
 
         // Add moving averages and RSI to each price record
         $filteredPrices->each(function ($price, $index) use ($ma10, $ma50, $rsi) {
+            $price->timestamp = Carbon::parse($price->timestamp, 'UTC')->setTimezone('America/New_York');
             $price->ma_10 = $ma10[$index] ?? null;
             $price->ma_50 = $ma50[$index] ?? null;
             $price->rsi = $rsi[$index] ?? null;

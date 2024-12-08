@@ -21,65 +21,74 @@ class CryptoPriceController extends Controller
     public function getPrices(Request $request)
     {
         $validatedData = $request->validate([
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
             'crypto' => 'required|string|in:bitcoin,ethereum,monero,solana',
+            'range' => 'required|string|in:hourly,7d,30d',
         ]);
 
-        $startDate = Carbon::parse($validatedData['start_date']);
-        $endDate = Carbon::parse($validatedData['end_date']);
         $crypto = $validatedData['crypto'];
+        $range = $validatedData['range'];
 
         $model = $this->models[$crypto];
+        $endTime = Carbon::now('UTC');
 
-        // Fetch the past 50 days of data based on the start date
-        $thresholdDate = $startDate->copy()->subDays(50);
-        $prices = $model::where('date', '>=', $thresholdDate)
-            ->where('date', '<=', $endDate)
-            ->orderBy('date')
-            ->get();
+        switch ($range) {
+            case 'hourly':
+                $startTime = $endTime->copy()->subHours(24);
+                $additionalTime = $startTime->copy()->subHours(50);
+                $prices = $model::where('timestamp', '>=', $additionalTime)
+                    ->where('timestamp', '<=', $endTime)
+                    ->orderBy('timestamp')
+                    ->get();
+                $period = 24;
+                break;
 
-        // Extract high_24h prices for moving average calculations
+            case '7d':
+                $startTime = $endTime->copy()->subDays(7);
+                $additionalTime = $startTime->copy()->subDays(50);
+                $prices = $model::where('timestamp', '>=', $additionalTime)
+                    ->where('timestamp', '<=', $endTime)
+                    ->whereRaw('HOUR(FROM_UNIXTIME(timestamp)) = 0')
+                    ->orderBy('timestamp')
+                    ->get();
+                $period = 7;
+                break;
+
+            case '30d':
+                $startTime = $endTime->copy()->subDays(30);
+                $additionalTime = $startTime->copy()->subDays(50);
+                $prices = $model::where('timestamp', '>=', $additionalTime)
+                    ->where('timestamp', '<=', $endTime)
+                    ->whereRaw('HOUR(FROM_UNIXTIME(timestamp)) = 0')
+                    ->orderBy('timestamp')
+                    ->get();
+                $period = 30;
+                break;
+        }
+
+        // Filter the prices to only include the requested time range
+        $filteredPrices = $prices->filter(function ($price) use ($startTime, $endTime) {
+            $time = Carbon::parse($price->timestamp, 'UTC');
+            return $time->between($startTime, $endTime);
+        });
+
+        // Extract high prices for moving average calculations
         $highPrices = $prices->pluck('high_24h')->map(fn($price) => (float) $price)->toArray();
 
         // Extract closing prices for RSI calculations
         $closingPrices = $prices->pluck('current_price')->map(fn($price) => (float) $price)->toArray();
 
         // Calculate moving averages
-        $ma10 = $this->calculateMovingAverage($highPrices, 10);
-        $ma50 = $this->calculateMovingAverage($highPrices, 50);
+        $ma10 = $this->calculateMovingAverage($highPrices, $range === 'hourly' ? 10 : 10 * 24);
+        $ma50 = $this->calculateMovingAverage($highPrices, $range === 'hourly' ? 50 : 50 * 24);
 
         // Calculate RSI
-        $rsi = $this->calculateRSI($closingPrices, 14);
+        $rsi = $this->calculateRSI($closingPrices, $range === 'hourly' ? 14 : 14 * 24);
 
-        // Add moving averages and prediction analysis to each price record
-        $prices = $prices->map(function ($price, $index) use ($ma10, $ma50, $highPrices, $rsi) {
-            $ma10Value = $ma10[$index] ?? null;
-            $ma50Value = $ma50[$index] ?? null;
-
-            // Determine crossovers
-            $goldenCross = $this->isGoldenCross($ma10, $ma50, $index);
-            $deathCross = $this->isDeathCross($ma10, $ma50, $index);
-
-            // Verify prediction accuracy
-            $accuracy = $this->verifyPrediction($highPrices, $index, $goldenCross, $deathCross, $price->total_volume);
-
-            $rsiValue = $rsi[$index] ?? null;
-
-            return array_merge($price->toArray(), [
-                'ma_10' => $ma10Value,
-                'ma_50' => $ma50Value,
-                'golden_cross' => $goldenCross,
-                'death_cross' => $deathCross,
-                'prediction_accuracy' => $accuracy,
-                'rsi' => $rsiValue,
-            ]);
-        });
-
-        // Filter the prices to only include the requested date range
-        $filteredPrices = $prices->filter(function ($price) use ($startDate, $endDate) {
-            $date = Carbon::parse($price['date']);
-            return $date->between($startDate, $endDate);
+        // Add moving averages and RSI to each price record
+        $filteredPrices->each(function ($price, $index) use ($ma10, $ma50, $rsi) {
+            $price->ma10 = $ma10[$index] ?? null;
+            $price->ma50 = $ma50[$index] ?? null;
+            $price->rsi = $rsi[$index] ?? null;
         });
 
         return response()->json($filteredPrices->values());
@@ -107,54 +116,7 @@ class CryptoPriceController extends Controller
         return $movingAverage;
     }
 
-    private function isGoldenCross(array $ma10, array $ma50, int $index)
-    {
-        if ($index < 1 || !isset($ma10[$index], $ma50[$index])) {
-            return false;
-        }
-        return $ma10[$index - 1] < $ma50[$index - 1] && $ma10[$index] >= $ma50[$index];
-    }
-
-    private function isDeathCross(array $ma10, array $ma50, int $index)
-    {
-        if ($index < 1 || !isset($ma10[$index], $ma50[$index])) {
-            return false;
-        }
-        return $ma10[$index - 1] > $ma50[$index - 1] && $ma10[$index] <= $ma50[$index];
-    }
-
-    private function verifyPrediction(array $highPrices, int $index, bool $goldenCross, bool $deathCross, $volume)
-    {
-        if (!isset($highPrices[$index], $highPrices[$index - 1])) {
-            return null; // Not enough data for prediction
-        }
-
-        $priceChange = $highPrices[$index] - $highPrices[$index - 1];
-
-        // Volume threshold: Arbitrary multiplier to gauge significant volume
-        $volumeThreshold = 1.2 * $highPrices[$index - 1];
-
-        if ($goldenCross && $priceChange > 0 && $volume > $volumeThreshold) {
-            return 'accurate (up)';
-        }
-        if ($deathCross && $priceChange < 0 && $volume > $volumeThreshold) {
-            return 'accurate (down)';
-        }
-        if ($goldenCross || $deathCross) {
-            return 'inaccurate';
-        }
-
-        return 'neutral';
-    }
-
-    /**
-     * Calculate the RSI (Relative Strength Index).
-     *
-     * @param array $prices
-     * @param int $period
-     * @return array
-     */
-    protected function calculateRSI(array $prices, int $period): array
+    private function calculateRSI(array $prices, int $period)
     {
         $rsi = [];
         $gains = 0;

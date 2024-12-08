@@ -49,18 +49,44 @@ class FetchHistoricalBitcoinPrice extends Command
      */
     protected function storeHistoricalData(array $data): void
     {
+        $priceDataPoints = [];
+
         foreach ($data['prices'] as $index => $priceData) {
-            $timestamp = Carbon::createFromTimestampMs($priceData[0])->roundHour()->setTimezone('UTC')->toDateTimeString();
+            $timestamp = Carbon::createFromTimestampMs($priceData[0])->roundHour()->setTimezone('UTC');
             $currentPrice = $priceData[1];
             $marketCap = $data['market_caps'][$index][1] ?? null;
             $totalVolume = $data['total_volumes'][$index][1] ?? null;
 
+            $priceDataPoints[] = [
+                'timestamp' => $timestamp,
+                'current_price' => $currentPrice,
+                'market_cap' => $marketCap,
+                'total_volume' => $totalVolume,
+            ];
+        }
+
+        foreach ($priceDataPoints as $index => $priceData) {
+            $timestamp = $priceData['timestamp'];
+            $startTime = $timestamp->copy()->subHours(24);
+
+            $high_24h = null;
+            $low_24h = null;
+
+            foreach ($priceDataPoints as $dataPoint) {
+                if ($dataPoint['timestamp']->between($startTime, $timestamp)) {
+                    $high_24h = $high_24h === null ? $dataPoint['current_price'] : max($high_24h, $dataPoint['current_price']);
+                    $low_24h = $low_24h === null ? $dataPoint['current_price'] : min($low_24h, $dataPoint['current_price']);
+                }
+            }
+
             BitcoinPrice::updateOrCreate(
-                ['timestamp' => $timestamp],
+                ['timestamp' => $timestamp->toDateTimeString()],
                 [
-                    'current_price' => $currentPrice,
-                    'market_cap' => $marketCap,
-                    'total_volume' => $totalVolume,
+                    'current_price' => $priceData['current_price'],
+                    'high_24h' => $high_24h,
+                    'low_24h' => $low_24h,
+                    'market_cap' => $priceData['market_cap'],
+                    'total_volume' => $priceData['total_volume'],
                 ]
             );
         }

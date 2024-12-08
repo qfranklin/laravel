@@ -14,15 +14,15 @@ return new class extends Migration
     {
         // Add the new timestamp column
         Schema::table('bitcoin_prices', function (Blueprint $table) {
-            $table->timestamp('timestamp')->nullable();
+            $table->timestamp('timestamp')->after('id')->nullable();
         });
 
         Schema::table('ethereum_prices', function (Blueprint $table) {
-            $table->timestamp('timestamp')->nullable();
+            $table->timestamp('timestamp')->after('id')->nullable();
         });
 
         Schema::table('monero_prices', function (Blueprint $table) {
-            $table->timestamp('timestamp')->nullable();
+            $table->timestamp('timestamp')->after('id')->nullable();
         });
 
         Schema::table('solana_prices', function (Blueprint $table) {

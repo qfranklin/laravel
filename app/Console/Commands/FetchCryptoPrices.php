@@ -45,8 +45,10 @@ class FetchCryptoPrices extends Command
 
             foreach ($data as $cryptoData) {
                 $model = $this->cryptos[$cryptoData['id']];
+                $timestamp = Carbon::now()->roundHour()->setTimezone('UTC')->toDateTimeString();
+
                 $model::updateOrCreate(
-                    ['timestamp' => Carbon::parse($cryptoData['last_updated'])->timestamp],
+                    ['timestamp' => $timestamp],
                     [
                         'current_price' => $cryptoData['current_price'],
                         'high_24h' => $cryptoData['high_24h'],

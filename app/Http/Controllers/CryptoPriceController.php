@@ -7,6 +7,7 @@ use App\Models\BitcoinPrice;
 use App\Models\EthereumPrice;
 use App\Models\MoneroPrice;
 use App\Models\SolanaPrice;
+use App\Models\PaxgPrice;
 use Carbon\Carbon;
 
 class CryptoPriceController extends Controller
@@ -16,12 +17,13 @@ class CryptoPriceController extends Controller
         'ethereum' => EthereumPrice::class,
         'monero' => MoneroPrice::class,
         'solana' => SolanaPrice::class,
+        'paxg' => PaxgPrice::class,
     ];
 
     public function getPrices(Request $request)
     {
         $validatedData = $request->validate([
-            'crypto' => 'required|string|in:bitcoin,ethereum,monero,solana',
+            'crypto' => 'required|string|in:bitcoin,ethereum,monero,solana,paxg',
             'range' => 'required|string|in:hourly,7d,30d',
         ]);
 

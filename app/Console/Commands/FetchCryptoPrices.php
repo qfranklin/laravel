@@ -9,6 +9,7 @@ use App\Models\BitcoinPrice;
 use App\Models\EthereumPrice;
 use App\Models\MoneroPrice;
 use App\Models\SolanaPrice;
+use App\Models\PaxgPrice;
 
 class FetchCryptoPrices extends Command
 {
@@ -21,6 +22,7 @@ class FetchCryptoPrices extends Command
         'ethereum' => EthereumPrice::class,
         'monero' => MoneroPrice::class,
         'solana' => SolanaPrice::class,
+        'pax-gold' => PaxgPrice::class, // Add this line
     ];
 
     public function handle()

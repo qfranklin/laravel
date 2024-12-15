@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotesController;
 use App\Http\Controllers\CryptoPriceController;
+use App\Http\Controllers\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,3 +32,8 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::get('/crypto/get-prices', [CryptoPriceController::class, 'getPrices']);
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{id}', [ProductController::class, 'show']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/products', [ProductController::class, 'store'])->middleware('can:isAdmin');
+});

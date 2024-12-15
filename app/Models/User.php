@@ -45,4 +45,9 @@ class User extends Authenticatable
         'password' => 'hashed',
         'birthday' => 'date',
     ];
+
+    public function isAdmin()
+    {
+        return $this->is_admin;
+    }
 }

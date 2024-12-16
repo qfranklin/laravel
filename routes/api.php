@@ -36,4 +36,5 @@ Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products', [ProductController::class, 'store'])->middleware('can:isAdmin');
+    Route::post('/products/{id}', [ProductController::class, 'update'])->middleware('can:isAdmin'); // Add this line
 });

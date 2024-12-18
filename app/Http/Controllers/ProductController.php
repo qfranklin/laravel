@@ -57,7 +57,7 @@ class ProductController extends Controller
             'description' => 'required|string',
             'price' => 'required|numeric',
             'newImages' => 'array',
-            'newImages.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'newImages.*' => 'image|mimes:jpeg,png,jpg,gif,svg',
             'deletedImages' => 'array',
             'deletedImages.*' => 'string',
         ]);

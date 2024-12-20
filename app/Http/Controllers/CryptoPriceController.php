@@ -35,8 +35,8 @@ class CryptoPriceController extends Controller
 
         switch ($range) {
             case '24h':
-                $startTime = $endTime->copy()->subHours(24);
-                $additionalTime = $startTime->copy()->subHours(50);
+                $startTime = $endTime->copy()->subHours(25);
+                $additionalTime = $startTime->copy()->subHours(51);
                 $prices = $model::where('timestamp', '>=', $additionalTime)
                     ->where('timestamp', '<=', $endTime)
                     ->orderBy('timestamp')
@@ -45,8 +45,8 @@ class CryptoPriceController extends Controller
                 break;
 
             case '7d':
-                $startTime = $endTime->copy()->subDays(7);
-                $additionalTime = $startTime->copy()->subDays(50);
+                $startTime = $endTime->copy()->subDays(8);
+                $additionalTime = $startTime->copy()->subDays(51);
                 $prices = $model::where('timestamp', '>=', $additionalTime)
                     ->where('timestamp', '<=', $endTime)
                     ->whereRaw("DATE_FORMAT(timestamp, '%H:%i:%s') = '00:00:00'")
@@ -56,8 +56,8 @@ class CryptoPriceController extends Controller
                 break;
 
             case '30d':
-                $startTime = $endTime->copy()->subDays(30);
-                $additionalTime = $startTime->copy()->subDays(50);
+                $startTime = $endTime->copy()->subDays(31);
+                $additionalTime = $startTime->copy()->subDays(51);
                 $prices = $model::where('timestamp', '>=', $additionalTime)
                     ->where('timestamp', '<=', $endTime)
                     ->whereRaw("DATE_FORMAT(timestamp, '%H:%i:%s') = '00:00:00'")

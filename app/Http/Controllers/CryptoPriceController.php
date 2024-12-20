@@ -24,7 +24,7 @@ class CryptoPriceController extends Controller
     {
         $validatedData = $request->validate([
             'crypto' => 'required|string|in:bitcoin,ethereum,monero,solana,paxg',
-            'range' => 'required|string|in:hourly,7d,30d',
+            'range' => 'required|string|in:24h,7d,30d',
         ]);
 
         $crypto = $validatedData['crypto'];
@@ -34,7 +34,7 @@ class CryptoPriceController extends Controller
         $endTime = Carbon::now('UTC');
 
         switch ($range) {
-            case 'hourly':
+            case '24h':
                 $startTime = $endTime->copy()->subHours(24);
                 $additionalTime = $startTime->copy()->subHours(50);
                 $prices = $model::where('timestamp', '>=', $additionalTime)

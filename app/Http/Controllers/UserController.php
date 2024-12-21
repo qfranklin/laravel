@@ -41,4 +41,10 @@ class UserController extends Controller
             ],
         ]);
     }
+
+    public function index()
+    {
+        $users = \App\Models\User::select('name', 'email', 'birthday')->get();
+        return response()->json($users);
+    }
 }

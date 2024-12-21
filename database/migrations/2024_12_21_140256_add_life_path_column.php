@@ -12,23 +12,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bitcoin_prices', function (Blueprint $table) {
-            $table->integer('lifepath_number')->nullable();
+            $table->integer('lifepath_number')->after('timestamp')->nullable();
         });
 
         Schema::table('ethereum_prices', function (Blueprint $table) {
-            $table->integer('lifepath_number')->nullable();
+            $table->integer('lifepath_number')->after('timestamp')->nullable();
         });
 
         Schema::table('monero_prices', function (Blueprint $table) {
-            $table->integer('lifepath_number')->nullable();
+            $table->integer('lifepath_number')->after('timestamp')->nullable();
         });
 
         Schema::table('solana_prices', function (Blueprint $table) {
-            $table->integer('lifepath_number')->nullable();
+            $table->integer('lifepath_number')->after('timestamp')->nullable();
         });
 
         Schema::table('paxg_prices', function (Blueprint $table) {
-            $table->integer('lifepath_number')->nullable();
+            $table->integer('lifepath_number')->after('timestamp')->nullable();
         });
     }
 

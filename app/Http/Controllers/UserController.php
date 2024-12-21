@@ -30,6 +30,7 @@ class UserController extends Controller
         $dailyPrediction = NumerologyHelper::getDailyPrediction($lifePathNumber, $personalDayNumber);
 
         return response()->json([
+            'name' => $user->name,
             'email' => $user->email,
             'is_admin' => $user->is_admin,
             'birthday' => $user->birthday,

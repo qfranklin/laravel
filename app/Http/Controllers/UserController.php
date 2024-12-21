@@ -11,12 +11,13 @@ class UserController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'birthday' => 'nullable|date',
+            'name' => 'required|string|max:255',
             'email' => 'nullable|email|unique:users,email,' . Auth::id(),
+            'birthday' => 'nullable|date',
         ]);
 
         $user = Auth::user();
-        $user->update($request->only('birthday', 'email'));
+        $user->update($request->only('name', 'email', 'birthday'));
 
         return response()->json(['message' => 'Profile updated successfully']);
     }
@@ -30,6 +31,7 @@ class UserController extends Controller
         $dailyPrediction = NumerologyHelper::getDailyPrediction($lifePathNumber, $personalDayNumber);
 
         return response()->json([
+            'name' => $user->name,
             'email' => $user->email,
             'is_admin' => $user->is_admin,
             'birthday' => $user->birthday,

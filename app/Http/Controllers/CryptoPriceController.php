@@ -24,7 +24,7 @@ class CryptoPriceController extends Controller
     {
         $validatedData = $request->validate([
             'crypto' => 'required|string|in:bitcoin,ethereum,monero,solana,paxg',
-            'range' => 'required|string|in:hourly,7d,30d',
+            'range' => 'required|string|in:24h,7d,30d',
         ]);
 
         $crypto = $validatedData['crypto'];
@@ -34,9 +34,9 @@ class CryptoPriceController extends Controller
         $endTime = Carbon::now('UTC');
 
         switch ($range) {
-            case 'hourly':
-                $startTime = $endTime->copy()->subHours(24);
-                $additionalTime = $startTime->copy()->subHours(50);
+            case '24h':
+                $startTime = $endTime->copy()->subHours(25);
+                $additionalTime = $startTime->copy()->subHours(51);
                 $prices = $model::where('timestamp', '>=', $additionalTime)
                     ->where('timestamp', '<=', $endTime)
                     ->orderBy('timestamp')
@@ -45,8 +45,8 @@ class CryptoPriceController extends Controller
                 break;
 
             case '7d':
-                $startTime = $endTime->copy()->subDays(7);
-                $additionalTime = $startTime->copy()->subDays(50);
+                $startTime = $endTime->copy()->subDays(8);
+                $additionalTime = $startTime->copy()->subDays(51);
                 $prices = $model::where('timestamp', '>=', $additionalTime)
                     ->where('timestamp', '<=', $endTime)
                     ->whereRaw("DATE_FORMAT(timestamp, '%H:%i:%s') = '00:00:00'")
@@ -56,8 +56,8 @@ class CryptoPriceController extends Controller
                 break;
 
             case '30d':
-                $startTime = $endTime->copy()->subDays(30);
-                $additionalTime = $startTime->copy()->subDays(50);
+                $startTime = $endTime->copy()->subDays(31);
+                $additionalTime = $startTime->copy()->subDays(51);
                 $prices = $model::where('timestamp', '>=', $additionalTime)
                     ->where('timestamp', '<=', $endTime)
                     ->whereRaw("DATE_FORMAT(timestamp, '%H:%i:%s') = '00:00:00'")

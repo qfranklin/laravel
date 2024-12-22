@@ -10,6 +10,7 @@ use App\Models\EthereumPrice;
 use App\Models\MoneroPrice;
 use App\Models\SolanaPrice;
 use App\Models\PaxgPrice;
+use App\Helpers\NumerologyHelper;
 
 class FetchCryptoPrices extends Command
 {
@@ -22,7 +23,7 @@ class FetchCryptoPrices extends Command
         'ethereum' => EthereumPrice::class,
         'monero' => MoneroPrice::class,
         'solana' => SolanaPrice::class,
-        'pax-gold' => PaxgPrice::class, // Add this line
+        'pax-gold' => PaxgPrice::class,
     ];
 
     public function handle()
@@ -48,6 +49,7 @@ class FetchCryptoPrices extends Command
             foreach ($data as $cryptoData) {
                 $model = $this->cryptos[$cryptoData['id']];
                 $timestamp = Carbon::now()->roundHour()->setTimezone('UTC')->toDateTimeString();
+                $lifepathNumber = NumerologyHelper::reduceLifePathDate($timestamp);
 
                 $model::updateOrCreate(
                     ['timestamp' => $timestamp],
@@ -57,10 +59,7 @@ class FetchCryptoPrices extends Command
                         'low_24h' => $cryptoData['low_24h'],
                         'market_cap' => $cryptoData['market_cap'],
                         'total_volume' => $cryptoData['total_volume'],
-                        'circulating_supply' => $cryptoData['circulating_supply'],
-                        'max_supply' => $cryptoData['max_supply'],
-                        'sentiment_votes_up_percentage' => $cryptoData['sentiment_votes_up_percentage'] ?? null,
-                        'sentiment_votes_down_percentage' => $cryptoData['sentiment_votes_down_percentage'] ?? null,
+                        'lifepath_number' => $lifepathNumber,
                     ]
                 );
             }

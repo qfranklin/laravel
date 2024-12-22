@@ -28,7 +28,7 @@ class UserController extends Controller
         $lifePathNumber = NumerologyHelper::reduceLifePathDate($user->birthday);
         $universalDayNumber = NumerologyHelper::reduceLifePathDate(now()->format('Y-m-d'));
         $personalDayNumber = NumerologyHelper::calculatePersonalDayNumber($lifePathNumber, $universalDayNumber);
-        $dailyPrediction = NumerologyHelper::getDailyPrediction($lifePathNumber, $personalDayNumber);
+        $dailyCompatibility = NumerologyHelper::getDailyCompatibility($lifePathNumber, $personalDayNumber);
 
         return response()->json([
             'name' => $user->name,
@@ -39,7 +39,7 @@ class UserController extends Controller
                 'life_path_number' => $lifePathNumber,
                 'universal_day_number' => $universalDayNumber,
                 'personal_day_number' => $personalDayNumber,
-                'daily_prediction' => $dailyPrediction,
+                'daily_compatibility' => $dailyCompatibility,
             ],
         ]);
     }

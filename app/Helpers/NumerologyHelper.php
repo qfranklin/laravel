@@ -9,7 +9,7 @@ class NumerologyHelper
         $date = new \DateTime($date);
         $sum = array_sum(str_split($date->format('Ymd')));
 
-        while ($sum > 9 && $sum !== 11 && $sum !== 22 && $sum !== 33) {
+        while ($sum > 9 && !in_array($sum, [11, 22, 33])) {
             $sum = array_sum(str_split($sum));
         }
 
@@ -20,14 +20,14 @@ class NumerologyHelper
     {
         $sum = $lifePathNumber + $universalDayNumber;
 
-        while ($sum > 9 && $sum !== 11 && $sum !== 22 && $sum !== 33) {
+        while ($sum > 9 && !in_array($sum, [11, 22, 33])) {
             $sum = array_sum(str_split($sum));
         }
 
         return $sum;
     }
 
-    public static function getDailyPrediction($lifePathNumber, $personalDayNumber)
+    public static function getDailyCompatibility($lifePathNumber, $personalDayNumber)
     {
         $compatibilityMatrix = [
             1  => [1 => 'good', 2 => 'neutral', 3 => 'good', 4 => 'neutral', 5 => 'good', 6 => 'neutral', 7 => 'bad', 8 => 'neutral', 9 => 'bad', 11 => 'good', 22 => 'neutral', 33 => 'neutral'],

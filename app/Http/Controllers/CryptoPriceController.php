@@ -24,7 +24,7 @@ class CryptoPriceController extends Controller
     {
         $validatedData = $request->validate([
             'crypto' => 'required|string|in:bitcoin,ethereum,monero,solana,paxg',
-            'range' => 'required|string|in:24h,7d,30d',
+            'range' => 'required|string|in:24h,7d,30d,Max',
         ]);
 
         $crypto = $validatedData['crypto'];
@@ -65,6 +65,25 @@ class CryptoPriceController extends Controller
                     ->get();
                 $period = 30;
                 break;
+
+                case 'Max':
+                    $startTime = Carbon::parse('2011-01-01 00:00:00', 'UTC');
+
+                    $halvingDates = [
+                        '2012-11-28 00:00:00',
+                        '2016-07-09 00:00:00',
+                        '2020-05-11 00:00:00',
+                        '2024-04-20 00:00:00'
+                    ];
+
+                    $prices = $model::whereRaw("DAYOFWEEK(timestamp) = 7")
+                        ->orWhereIn('timestamp', $halvingDates)
+                        ->orderBy('timestamp')
+                        ->get();
+
+                    $period = 7;
+
+                    break;
         }
 
         // Remove duplicates by timestamp

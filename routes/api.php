@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotesController;
 use App\Http\Controllers\CryptoPriceController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\STLController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,3 +40,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products/{id}', [ProductController::class, 'update'])->middleware('can:isAdmin');
     Route::get('/users', [UserController::class, 'index'])->middleware('can:isAdmin');
 });
+
+Route::post('/generate-stl', [STLController::class, 'generateSTL']);

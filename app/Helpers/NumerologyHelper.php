@@ -27,7 +27,7 @@ class NumerologyHelper
         return $sum;
     }
 
-    public static function getDailyPrediction($lifePathNumber, $personalDayNumber)
+    public static function getDailyCompatibility($lifePathNumber, $personalDayNumber)
     {
         $compatibilityMatrix = [
             1  => [1 => 'good', 2 => 'neutral', 3 => 'good', 4 => 'neutral', 5 => 'good', 6 => 'neutral', 7 => 'bad', 8 => 'neutral', 9 => 'bad', 11 => 'good', 22 => 'neutral', 33 => 'neutral'],

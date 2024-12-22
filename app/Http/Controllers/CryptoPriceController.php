@@ -24,7 +24,7 @@ class CryptoPriceController extends Controller
     {
         $validatedData = $request->validate([
             'crypto' => 'required|string|in:bitcoin,ethereum,monero,solana,paxg',
-            'range' => 'required|string|in:24h,7d,30d,Max',
+            'range' => 'required|string|in:24h,7d,30d,max',
         ]);
 
         $crypto = $validatedData['crypto'];
@@ -41,7 +41,7 @@ class CryptoPriceController extends Controller
                     ->where('timestamp', '<=', $endTime)
                     ->orderBy('timestamp')
                     ->get();
-                $period = 24;
+                $period = 14;
                 break;
 
             case '7d':
@@ -66,7 +66,7 @@ class CryptoPriceController extends Controller
                 $period = 30;
                 break;
 
-                case 'Max':
+                case 'max':
                     $startTime = Carbon::parse('2011-01-01 00:00:00', 'UTC');
 
                     $halvingDates = [
@@ -81,7 +81,7 @@ class CryptoPriceController extends Controller
                         ->orderBy('timestamp')
                         ->get();
 
-                    $period = 7;
+                    $period = 14;
 
                     break;
         }

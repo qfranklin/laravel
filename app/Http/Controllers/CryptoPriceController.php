@@ -69,17 +69,32 @@ class CryptoPriceController extends Controller
                 case 'max':
                     $startTime = Carbon::parse('2011-01-01 00:00:00', 'UTC');
 
-                    $halvingDates = [
-                        '2012-11-28 00:00:00',
-                        '2016-07-09 00:00:00',
-                        '2020-05-11 00:00:00',
-                        '2024-04-20 00:00:00'
-                    ];
-
-                    $prices = $model::whereRaw("DAYOFWEEK(timestamp) = 7")
-                        ->orWhereIn('timestamp', $halvingDates)
+                    $prices = $model::where('timestamp', '>=', $startTime)
                         ->orderBy('timestamp')
                         ->get();
+
+                    // Group prices by month
+                    $groupedPrices = $prices->groupBy(function ($price) {
+                        return Carbon::parse($price->timestamp, 'UTC')->format('Y-m');
+                    });
+
+                    // Calculate the lowest low_24h and highest high_24h for each month
+                    $monthlyPrices = $groupedPrices->map(function ($monthPrices) {
+                        $lowestLow = $monthPrices->min('low_24h');
+                        $highestHigh = $monthPrices->max('high_24h');
+                        $firstOfMonth = $monthPrices->firstWhere(function ($price) {
+                            return Carbon::parse($price->timestamp, 'UTC')->format('d H:i:s') === '01 00:00:00';
+                        });
+
+                        if ($firstOfMonth) {
+                            $firstOfMonth->low_24h = $lowestLow;
+                            $firstOfMonth->high_24h = $highestHigh;
+                        }
+
+                        return $firstOfMonth;
+                    })->filter();
+
+                    $prices = $monthlyPrices->values();
 
                     $period = 14;
 

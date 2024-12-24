@@ -20,13 +20,12 @@ use App\Http\Controllers\ProductController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUserData']);
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth:sanctum');
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/user/update', [UserController::class, 'update']);
+    Route::post('/user/update/{id}', [UserController::class, 'update']);
     Route::get('/notes', [NotesController::class, 'index']);
     Route::post('/notes', [NotesController::class, 'store']);
 });
@@ -37,5 +36,6 @@ Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products', [ProductController::class, 'store'])->middleware('can:isAdmin');
     Route::post('/products/{id}', [ProductController::class, 'update'])->middleware('can:isAdmin');
+    Route::get('/user/{id}', [UserController::class, 'getUserData']);
     Route::get('/users', [UserController::class, 'index'])->middleware('can:isAdmin');
 });

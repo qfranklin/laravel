@@ -8,12 +8,17 @@ use Illuminate\Support\Facades\Auth;
 
 class NotesController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $notes = Note::where('user_id', Auth::id())
-            ->whereDate('created_at', now()->toDateString())
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        $notes = Note::where('user_id', auth()->id())
+                     ->whereBetween('date', [$request->start_date, $request->end_date])
+                     ->orderBy('date', 'asc')
+                     ->get();
 
         return response()->json($notes);
     }
@@ -22,13 +27,15 @@ class NotesController extends Controller
     {
         $request->validate([
             'content' => 'required|string',
+            'date' => 'required|date',
         ]);
 
         $note = new Note();
         $note->user_id = Auth::id();
         $note->content = $request->content;
+        $note->date = $request->date;
         $note->save();
 
-        return response()->json($note);
+        return response()->json($note, 201);
     }
 }

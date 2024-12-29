@@ -34,5 +34,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserController::class, 'index'])->middleware('can:isAdmin');
     Route::get('/notes', [NotesController::class, 'index']);
     Route::post('/notes', [NotesController::class, 'store']);
-    Route::post('/user/update/{id}', [UserController::class, 'update']);
+    Route::put('/user/update/{id}', [UserController::class, 'update']);
 });

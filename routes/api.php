@@ -24,12 +24,6 @@ Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth:sanctum');
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/user/update/{id}', [UserController::class, 'update']);
-    Route::get('/notes', [NotesController::class, 'index']);
-    Route::post('/notes', [NotesController::class, 'store']);
-});
-
 Route::get('/crypto/get-prices', [CryptoPriceController::class, 'getPrices']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
@@ -38,4 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products/{id}', [ProductController::class, 'update'])->middleware('can:isAdmin');
     Route::get('/user/{id}', [UserController::class, 'getUserData']);
     Route::get('/users', [UserController::class, 'index'])->middleware('can:isAdmin');
+    Route::get('/notes', [NotesController::class, 'index']);
+    Route::post('/notes', [NotesController::class, 'store']);
+    Route::post('/user/update/{id}', [UserController::class, 'update']);
 });

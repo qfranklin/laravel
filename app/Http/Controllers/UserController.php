@@ -29,9 +29,14 @@ class UserController extends Controller
         return response()->json(['message' => 'Profile updated successfully']);
     }
 
-    public function getUserData($id)
+    public function getUserData($identifier)
     {
-        $user = User::findOrFail($id);
+        if (is_numeric($identifier)) {
+            $user = User::findOrFail($identifier);
+        } else {
+            $user = User::where('slug', $identifier)->firstOrFail();
+        }
+
         $currentUser = Auth::user();
 
         if ($currentUser->id !== $user->id && !$currentUser->is_admin) {

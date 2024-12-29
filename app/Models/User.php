@@ -22,7 +22,8 @@ class User extends Authenticatable
         'email',
         'password',
         'is_admin',
-        'birthday', // Add this line
+        'birthday',
+        'slug'
     ];
 
     /**

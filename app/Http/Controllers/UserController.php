@@ -56,6 +56,7 @@ class UserController extends Controller
         $dailyCompatibility = NumerologyHelper::getDailyCompatibility($lifePathNumber, $personalDayNumber);
 
         return response()->json([
+            'id' => $user->id,
             'name' => $user->name,
             'slug' => $user->slug,
             'email' => $user->email,

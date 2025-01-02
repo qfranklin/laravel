@@ -15,6 +15,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|unique:users,email,' . $id,
             'birthday' => 'nullable|date',
+            'slug' => 'nullable|string|unique:users,slug,' . $id,
         ]);
 
         $user = User::findOrFail($id);
@@ -24,7 +25,13 @@ class UserController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $user->update($request->only('name', 'email', 'birthday'));
+        $data = $request->only('name', 'email', 'birthday');
+
+        if ($currentUser->is_admin && $request->has('slug')) {
+            $data['slug'] = $request->input('slug');
+        }
+
+        $user->update($data);
 
         return response()->json(['message' => 'Profile updated successfully']);
     }
@@ -50,6 +57,7 @@ class UserController extends Controller
 
         return response()->json([
             'name' => $user->name,
+            'slug' => $user->slug,
             'email' => $user->email,
             'is_admin' => $user->is_admin,
             'birthday' => $user->birthday,

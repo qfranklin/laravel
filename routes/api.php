@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotesController;
 use App\Http\Controllers\CryptoPriceController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Auth\PasswordResetController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +24,9 @@ use App\Http\Controllers\ProductController;
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth:sanctum');
+
+Route::post('password/email', [PasswordResetController::class, 'sendResetLinkEmail']);
+Route::post('password/reset', [PasswordResetController::class, 'reset']);
 
 Route::get('/crypto/get-prices', [CryptoPriceController::class, 'getPrices']);
 Route::get('/products', [ProductController::class, 'index']);

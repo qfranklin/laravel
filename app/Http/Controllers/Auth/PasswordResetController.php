@@ -52,4 +52,11 @@ class PasswordResetController extends Controller
                     ? response()->json(['status' => __($status)], 200)
                     : response()->json(['email' => [__($status)]], 400);
     }
+
+    public function showResetForm(Request $request, $token = null)
+    {
+        return view('auth.reset')->with(
+            ['token' => $token, 'email' => $request->email]
+        );
+    }
 }

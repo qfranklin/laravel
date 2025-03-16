@@ -34,6 +34,7 @@ Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products', [ProductController::class, 'store'])->middleware('can:isAdmin');
     Route::post('/products/{id}', [ProductController::class, 'update'])->middleware('can:isAdmin');
+    Route::delete('/products/{id}', [ProductController::class, 'destroy'])->middleware('can:isAdmin');
     Route::get('/user/{identifier}', [UserController::class, 'getUserData']);
     Route::get('/users', [UserController::class, 'index'])->middleware('can:isAdmin');
     Route::get('/notes', [NotesController::class, 'index']);

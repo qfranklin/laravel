@@ -104,4 +104,20 @@ class ProductController extends Controller
 
         return response()->json($product);
     }
+
+    public function destroy($id)
+    {
+        $product = Product::findOrFail($id);
+
+        // Delete associated images
+        if ($product->images) {
+            foreach ($product->images as $image) {
+                Storage::disk('public')->delete($image);
+            }
+        }
+
+        $product->delete();
+
+        return response()->json(['message' => 'Product deleted successfully'], 200);
+    }
 }

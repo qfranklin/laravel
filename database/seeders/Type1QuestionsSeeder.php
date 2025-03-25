@@ -14,7 +14,7 @@ class Type1QuestionsSeeder extends Seeder
      */
     public function run()
     {
-        // Existing Unique Type 1 Questions
+        // Existing Unique Questions
 
         Epa608TestQuestion::firstOrCreate([
             'question' => 'Which type of refrigerant is most harmful to the ozone layer?',
@@ -37,7 +37,7 @@ class Type1QuestionsSeeder extends Seeder
         ]);
 
         Epa608TestQuestion::firstOrCreate([
-            'question' => 'Which of the following is a requirement for Type I certification?',
+            'question' => 'Which of the following is a requirement for obtaining EPA Section 608 certification?',
             'question_type' => 'type 1',
             'option_a' => 'Knowledge of small appliances',
             'option_b' => 'Knowledge of high-pressure systems',
@@ -47,7 +47,7 @@ class Type1QuestionsSeeder extends Seeder
         ]);
 
         Epa608TestQuestion::firstOrCreate([
-            'question' => 'What is the maximum allowable charge of refrigerant for Type I appliances?',
+            'question' => 'What is the maximum allowable charge of refrigerant for small appliance systems?',
             'question_type' => 'type 1',
             'option_a' => '5 pounds',
             'option_b' => '10 pounds',
@@ -77,7 +77,7 @@ class Type1QuestionsSeeder extends Seeder
         ]);
 
         Epa608TestQuestion::firstOrCreate([
-            'question' => 'Which instrument is most commonly used to measure refrigerant pressure in Type I systems?',
+            'question' => 'Which instrument is most commonly used to measure refrigerant pressure in small appliance systems?',
             'question_type' => 'type 1',
             'option_a' => 'Digital thermometer',
             'option_b' => 'Manifold gauge',
@@ -87,7 +87,7 @@ class Type1QuestionsSeeder extends Seeder
         ]);
 
         Epa608TestQuestion::firstOrCreate([
-            'question' => 'What effect does an overcharged Type I appliance have on its performance?',
+            'question' => 'What effect does an overcharged small appliance have on its performance?',
             'question_type' => 'type 1',
             'option_a' => 'It improves cooling efficiency',
             'option_b' => 'It may reduce system efficiency and cause damage',
@@ -107,7 +107,7 @@ class Type1QuestionsSeeder extends Seeder
         ]);
 
         Epa608TestQuestion::firstOrCreate([
-            'question' => 'How often should you inspect a Type I system for leaks?',
+            'question' => 'How often should you inspect a small appliance system for leaks?',
             'question_type' => 'type 1',
             'option_a' => 'Every month',
             'option_b' => 'Every six months',
@@ -117,7 +117,7 @@ class Type1QuestionsSeeder extends Seeder
         ]);
 
         Epa608TestQuestion::firstOrCreate([
-            'question' => 'What is the purpose of using a leak detector in Type I appliance servicing?',
+            'question' => 'What is the purpose of using a leak detector when servicing small appliances?',
             'question_type' => 'type 1',
             'option_a' => 'To increase refrigerant charge',
             'option_b' => 'To identify refrigerant leaks',
@@ -147,7 +147,7 @@ class Type1QuestionsSeeder extends Seeder
         ]);
 
         Epa608TestQuestion::firstOrCreate([
-            'question' => 'In a Type I system, which environmental factor is most concerning when refrigerant leaks occur?',
+            'question' => 'In a small appliance system, which environmental factor is most concerning when refrigerant leaks occur?',
             'question_type' => 'type 1',
             'option_a' => 'Air quality',
             'option_b' => 'Water contamination',
@@ -166,14 +166,16 @@ class Type1QuestionsSeeder extends Seeder
             'correct_answer' => 'Gradually pulling a deep vacuum to remove all air and moisture',
         ]);
 
+        // Additional New Unique Questions
+
         Epa608TestQuestion::firstOrCreate([
             'question' => 'Which certification level specifically applies to small appliances?',
             'question_type' => 'type 1',
             'option_a' => 'Core',
-            'option_b' => 'Type I',
+            'option_b' => 'Small Appliance',
             'option_c' => 'Type II',
             'option_d' => 'Type III',
-            'correct_answer' => 'Type I',
+            'correct_answer' => 'Small Appliance',
         ]);
 
         Epa608TestQuestion::firstOrCreate([
@@ -197,7 +199,7 @@ class Type1QuestionsSeeder extends Seeder
         ]);
 
         Epa608TestQuestion::firstOrCreate([
-            'question' => 'What environmental impact is minimized by using proper procedures in Type I appliance servicing?',
+            'question' => 'What environmental impact is minimized by using proper procedures in small appliance servicing?',
             'question_type' => 'type 1',
             'option_a' => 'Reduction in noise pollution',
             'option_b' => 'Minimization of greenhouse gas emissions',
@@ -205,8 +207,6 @@ class Type1QuestionsSeeder extends Seeder
             'option_d' => 'Mitigation of soil erosion',
             'correct_answer' => 'Minimization of greenhouse gas emissions',
         ]);
-
-        // Additional New Unique Type 1 Questions
 
         Epa608TestQuestion::firstOrCreate([
             'question' => 'What is the recommended frequency for calibrating a manifold gauge set in small appliance systems?',
@@ -239,7 +239,7 @@ class Type1QuestionsSeeder extends Seeder
         ]);
 
         Epa608TestQuestion::firstOrCreate([
-            'question' => 'What is the key advantage of using digital leak detectors in modern Type I appliance servicing?',
+            'question' => 'What is the key advantage of using digital leak detectors in modern small appliance servicing?',
             'question_type' => 'type 1',
             'option_a' => 'Improved accuracy and sensitivity',
             'option_b' => 'Lower cost compared to analog devices',
@@ -249,7 +249,7 @@ class Type1QuestionsSeeder extends Seeder
         ]);
 
         Epa608TestQuestion::firstOrCreate([
-            'question' => 'How can technicians ensure the longevity of refrigerant recovery equipment in Type I systems?',
+            'question' => 'How can technicians ensure the longevity of refrigerant recovery equipment in small appliance systems?',
             'question_type' => 'type 1',
             'option_a' => 'By frequent replacement of components',
             'option_b' => 'By scheduled maintenance and proper calibration',

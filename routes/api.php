@@ -9,6 +9,8 @@ use App\Http\Controllers\NotesController;
 use App\Http\Controllers\CryptoPriceController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\Epa608TestQuestionController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -40,4 +42,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notes', [NotesController::class, 'index']);
     Route::post('/notes', [NotesController::class, 'store']);
     Route::put('/user/update/{id}', [UserController::class, 'update']);
+    Route::get('/test/epa608', [Epa608TestQuestionController::class, 'index']);
+    Route::post('/test/epa608/answers', [Epa608TestQuestionController::class, 'storeAnswer'])->middleware('auth:sanctum');
 });

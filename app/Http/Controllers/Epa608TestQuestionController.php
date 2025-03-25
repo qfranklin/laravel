@@ -9,7 +9,7 @@ class Epa608TestQuestionController extends Controller
 {
     public function index()
     {
-        $questions = Epa608TestQuestion::all();
+        $questions = Epa608TestQuestion::inRandomOrder()->get();
         return response()->json($questions);
     }
 }
